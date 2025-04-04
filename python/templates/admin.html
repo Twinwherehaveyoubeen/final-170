@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+<body>
+    <h2>Pending User Approvals</h2>
+
+    {% if users %}
+        <ul>
+        {% for user in users %}
+            <li>
+                <strong>{{ user.First_name }} {{ user.Last_name }}</strong><br>
+                Username: {{ user.Username }}<br>
+                SSN: {{ user.SSN }}<br>
+                Address: {{ user.Address }}<br>
+                Phone: {{ user.Phone_Num }}<br>
+                <a href="/approve/{{ user.User_Id }}">Approve</a><br><br>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No users waiting for approval.</p>
+    {% endif %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul style="color:green;">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <br><a href="/logout">Logout</a>
+</body>
+</html>

@@ -3,21 +3,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+</html><!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up</title>
 </head>
 <body>
-    <h2>Welcome to Sign Up</h2>
-    <form action="/SignUp">
+    <h2>Create an Account</h2>
+    <form method="POST">
+        <label>Username:</label><br>
+        <input type="text" name="username" required><br><br>
 
-        <label>Username:</label>
-        <input type="Username" name="Username" required><br><br>
+        <label>First Name:</label><br>
+        <input type="text" name="first_name" required><br><br>
 
-        <label>Email:</label>
-        <input type="Email" name="Email" required><br><br>
+        <label>Last Name:</label><br>
+        <input type="text" name="last_name" required><br><br>
 
-        <label for="">Password:</label>
-        <input type="password" name="password" required> <br><br>
+        <label>SSN:</label><br>
+        <input type="text" name="ssn" required><br><br>
 
-        <button >Submit</button>
+        <label>Address:</label><br>
+        <input type="text" name="address" required><br><br>
+
+        <label>Phone Number:</label><br>
+        <input type="text" name="phone" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <button type="submit">Sign Up</button>
     </form>
+
+    <p>Already have an account? <a href="/login">Log in</a></p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul style="color:red;">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
 </body>
 </html>
