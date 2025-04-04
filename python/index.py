@@ -4,8 +4,7 @@ import random
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  
-
+app.secret_key = 'your_secret_key'
 
 conn = mysql.connector.connect(
     host="localhost",
@@ -17,7 +16,11 @@ cursor = conn.cursor(dictionary=True)
 
 @app.route('/')
 def home():
-    return redirect('/login')
+    return render_template('home.html')
+
+@app.route('/register')
+def register():
+    return render_template('signup.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -49,14 +52,12 @@ def signup():
         return redirect('/login')
     return render_template('signup.html')
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-     
         cursor.execute("SELECT * FROM Admins WHERE Username = %s AND Password = %s", (username, password))
         admin = cursor.fetchone()
 
@@ -65,7 +66,6 @@ def login():
             session['username'] = username
             return redirect('/admin_dashboard')
 
-        
         cursor.execute("SELECT * FROM Users WHERE Username = %s AND Password = %s", (username, password))
         user = cursor.fetchone()
 
@@ -88,7 +88,6 @@ def login():
 
     return render_template('login.html')
 
-
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if not session.get('admin'):
@@ -110,19 +109,16 @@ def approve(user_id):
     flash(f"User {user_id} approved.")
     return redirect('/admin_dashboard')
 
-
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/login')
-
 
 @app.route('/dashboard')
 def dashboard():
     if not session.get('user_id'):
         return redirect('/login')
     return f"Welcome, {session['username']}! Your account number is {session['account_num']}."
-
 
 if __name__ == '__main__':
     app.run(debug=True)
