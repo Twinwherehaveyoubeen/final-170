@@ -1,0 +1,27 @@
+s
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deposit Funds</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h2>Deposit Funds</h2>
+    <form method="POST">
+        <label>Card Number</label>
+        <input type="text" name="card_number" required>
+
+        <label>Expiry Date (MM/YY)</label>
+        <input type="text" name="expiry" required>
+
+        <label>CCV</label>
+        <input type="text" name="ccv" required>
+
+        <label>Amount</label>
+        <input type="text" name="amount" required>
+
+        <button type="submit">Deposit</button>
+    </form>
+    <a href="/dashboard">Back to Account</a>
+</body>
+</html>

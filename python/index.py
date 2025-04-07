@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, session, url_for, f
 import mysql.connector
 import random
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -31,7 +32,7 @@ def signup():
         ssn = request.form['ssn']
         address = request.form['address']
         phone = request.form['phone']
-        password = request.form['password']
+        password = generate_password_hash(request.form['password'])
 
         cursor.execute("SELECT * FROM Users WHERE Username = %s OR SSN = %s OR Phone_Num = %s",
                        (username, ssn, phone))
@@ -58,28 +59,37 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        cursor.execute("SELECT * FROM Admins WHERE Username = %s AND Password = %s", (username, password))
-        admin = cursor.fetchone()
+        print("Username:", username)
+        print("Password:", password)
 
-        if admin:
+        cursor.execute("SELECT * FROM Admins WHERE Username = %s", (username,))
+        admin = cursor.fetchone()
+        print("Admin found:", admin)
+
+        if admin and check_password_hash(admin['Password'], password):
             session['admin'] = True
             session['username'] = username
             return redirect('/admin_dashboard')
 
-        cursor.execute("SELECT * FROM Users WHERE Username = %s AND Password = %s", (username, password))
+        cursor.execute("SELECT * FROM Users WHERE Username = %s", (username,))
         user = cursor.fetchone()
+        print("User found:", user)
 
         if user:
-            session['user_id'] = user['User_Id']
-            session['username'] = user['Username']
+            print("Hash check:", check_password_hash(user['Password'], password))
 
+      
+        if user and check_password_hash(user['Password'], password):
             cursor.execute("SELECT * FROM Bank_Accounts WHERE User_Id = %s", (user['User_Id'],))
             account = cursor.fetchone()
+            print("Account found:", account)
 
             if not account:
                 flash("Account pending admin approval.")
                 return redirect('/login')
 
+            session['user_id'] = user['User_Id']
+            session['username'] = user['Username']
             session['account_num'] = account['Account_Num']
             return redirect('/dashboard')
 
@@ -118,7 +128,56 @@ def logout():
 def dashboard():
     if not session.get('user_id'):
         return redirect('/login')
-    return f"Welcome, {session['username']}! Your account number is {session['account_num']}."
+
+    cursor.execute("SELECT * FROM Bank_Accounts WHERE User_Id = %s", (session['user_id'],))
+    account = cursor.fetchone()
+
+    return render_template('account.html', username=session['username'], account=account)
+
+@app.route('/deposit', methods=['GET', 'POST'])
+def deposit():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    if request.method == 'POST':
+        amount = float(request.form['amount'])
+        user_id = session['user_id']
+        cursor.execute("UPDATE Bank_Accounts SET Balance = Balance + %s WHERE User_Id = %s", (amount, user_id))
+        conn.commit()
+        flash("Deposit successful.")
+        return redirect('/dashboard')
+
+    return render_template('deposit.html')
+
+@app.route('/transfer', methods=['GET', 'POST'])
+def transfer():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    if request.method == 'POST':
+        sender_id = session['user_id']
+        recipient_acc = request.form['recipient_account']
+        amount = float(request.form['amount'])
+
+        cursor.execute("SELECT * FROM Bank_Accounts WHERE Account_Num = %s", (recipient_acc,))
+        recipient = cursor.fetchone()
+
+        if not recipient:
+            return "Recipient account not found."
+
+        cursor.execute("SELECT Balance FROM Bank_Accounts WHERE User_Id = %s", (sender_id,))
+        sender_balance = cursor.fetchone()['Balance']
+
+        if sender_balance < amount:
+            return "Insufficient funds."
+
+        cursor.execute("UPDATE Bank_Accounts SET Balance = Balance - %s WHERE User_Id = %s", (amount, sender_id))
+        cursor.execute("UPDATE Bank_Accounts SET Balance = Balance + %s WHERE User_Id = %s", (amount, recipient['User_Id']))
+        conn.commit()
+        flash("Transfer successful.")
+        return redirect('/dashboard')
+
+    return render_template('transfer.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

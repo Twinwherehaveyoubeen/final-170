@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transfer Funds</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h2>Send Money</h2>
+    <form method="POST">
+        <label>Recipient's Account Number</label>
+        <input type="text" name="recipient_account" required>
+
+        <label>Amount</label>
+        <input type="text" name="amount" required>
+
+        <button type="submit">Transfer</button>
+    </form>
+    <a href="/dashboard">Back to Account</a>
+</body>
+</html>

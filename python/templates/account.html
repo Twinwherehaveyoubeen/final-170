@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Account</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h2>Welcome, {{ username }}!</h2>
+    <p>Account Number: {{ account.Account_Num }}</p>
+    <p>Balance: ${{ account.Balance }}</p>
+
+    <br>
+    <a href="/deposit">Deposit</a> |
+    <a href="/transfer">Transfer</a> |
+    <a href="/logout">Logout</a>
+</body>
+</html>
